@@ -18,7 +18,7 @@ Minimalist CLI for streaming internet radio stations via MPD (Music Player Daemo
 
 ## Features
 * Stream internet radio stations directly through MPD.
-* Built-in stations: Nightride FM (synthwave) and Nightride FM Chillsynth (lofi).
+* Stations defined in a standalone `stations.json` — easy to add or modify.
 * Zero external Python dependencies — pure `subprocess` and `mpc`.
 * Lightweight CLI with stop, pause, toggle, and current-track commands.
 
@@ -134,12 +134,14 @@ All state lives under `~/.config/scripts/radio/`.
 
 ```
 ~/.config/scripts/radio/
-└── radio.py
+├── radio.py
+└── stations.json
 ```
 
 | Path | Description |
 | --- | --- |
-| `radio.py` | CLI entry point, station definitions, and MPD command router. |
+| `radio.py` | CLI entry point and MPD command router. |
+| `stations.json` | Radio station definitions (add or edit stations here). |
 
 ## Troubleshooting
 
