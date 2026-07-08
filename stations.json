@@ -1,0 +1,10 @@
+{
+    "lofi": {
+        "name": "Chillsynth",
+        "url": "https://stream.nightride.fm/chillsynth.mp3"
+    },
+    "synthwave": {
+        "name": "Nightride",
+        "url": "https://stream.nightride.fm/nightride.mp3"
+    }
+}

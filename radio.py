@@ -3,24 +3,16 @@
 # dependencies = []
 # ///
 import itertools
+import json
 import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 
 MPC = ["mpc"]
-
-# station schema: key -> {name, url} — direct ICY/HTTP streams
-STATIONS = {
-    "lofi": {
-        "name": "Nightride FM: Chillsynth",
-        "url": "https://stream.nightride.fm/chillsynth.mp3",
-    },
-    "synthwave": {
-        "name": "Nightride FM",
-        "url": "https://stream.nightride.fm/nightride.mp3",
-    },
-}
+STATIONS_FILE = Path.home() / ".config" / "scripts" / "radio" / "stations.json"
+STATIONS = json.loads(STATIONS_FILE.read_text())
 
 
 # Helpers
@@ -54,6 +46,28 @@ def run_with_spinner(msg: str, fn) -> None:
         t.join()
 
 
+def _playback_state() -> str | None:
+    """Returns 'playing', 'paused', or None (stopped/no mpd)."""
+    result = mpc()
+    lines = result.stdout.splitlines()
+    if len(lines) < 2:
+        return None
+    if lines[1].startswith("[playing]"):
+        return "playing"
+    if lines[1].startswith("[paused]"):
+        return "paused"
+    return None
+
+
+def _current_station_name() -> str | None:
+    result = mpc("current", "-f", "%file%")
+    url = result.stdout.strip()
+    for station in STATIONS.values():
+        if station["url"] == url:
+            return station["name"]
+    return None
+
+
 # Commands
 def play(key: str | None) -> None:
     if not key:
@@ -83,13 +97,31 @@ def list_stations() -> None:
         print(f"    {key:<10} {s['name']}")
 
 
+def current_json() -> None:
+    state = _playback_state()
+    name = _current_station_name()
+
+    if not name or state is None:
+        text = "No radio"
+        css_class = "off"
+    elif state == "playing":
+        text = f"Station: {name}"
+        css_class = "playing"
+    else:
+        text = f"Station: {name}"
+        css_class = "paused"
+
+    print(json.dumps({"text": text, "class": css_class}))
+
+
 # CLI
 COMMANDS = {
-    "--play": None,  # handled separately below, needs an argument
+    "--play": None,
     "--stop": stop,
     "--pause": lambda: mpc_print("pause"),
     "--toggle": lambda: mpc_print("toggle"),
     "--current": lambda: mpc_print("current"),
+    "--current-json": current_json,
     "--list": list_stations,
 }
 
